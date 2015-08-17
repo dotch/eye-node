@@ -1,0 +1,62 @@
+<html>
+	<head>
+	<title>TheEyeTribe Heatmap Example</title>
+		<script type='text/javascript' src="http://localhost:8080/socket.io/socket.io.js"></script>
+		<script type='text/javascript' src="heatmap.js"></script>
+		<script type='text/javascript'>
+	  window.onload = function() {
+	  	var socket = io.connect('http://localhost:8080');
+			var config = {
+			    "radius": 30,
+			    "element": "heatmapEl",
+			    "visible": true,
+			    "opacity": 40,
+			    "gradient": { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)" }
+			};
+
+			var heatmap = heatmapFactory.create(config);
+
+			function screenToPage(x,y) {
+				if (x < window.screenX ||
+					x > window.screenX + window.outerWidth ||
+					y < window.screenY ||
+					y > window.screenY + window.outerHeight) {
+					return null;
+				}
+				var barHeight = window.outerHeight - window.innerHeight;
+				return {
+					x: x - window.screenX,
+					y: y - window.screenY - barHeight
+				}
+			}
+		  socket.on('frame', function (data) {
+		  	if(!data.avg.x && !data.avg.y)
+	  			return;
+				var p = screenToPage(data.avg.x, data.avg.y);
+				if(!p)
+					return;
+				heatmap.store.addDataPoint(p.x, p.y);
+		  });
+		};
+		</script>
+		<style>
+		body {
+			background: #000 url('Water_Lily.jpg') no-repeat center center;
+			background-size: contain;
+		}
+		body,html,.fullscreen {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				top: 0;
+				left: 0;
+				margin: 0;
+				padding: 0;
+		}
+		</style>
+	</head>
+	<body>
+	<div id="heatmapEl" class="fullscreen"></div>
+	<div id="wrapper" class="fullscreen"><div id="eye"></div></div>
+	</body>
+</html>

@@ -1,0 +1,48 @@
+<html>
+<head>
+  <title>TheEyeTribe Hello World</title>
+  <style>
+    body,html {
+      margin: 0;
+      padding: 0;
+    }
+    #eye {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background-color: red;
+    }
+  </style>
+  <script type='text/javascript' src="http://localhost:8080/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <div id="eye"></div>
+  <script type='text/javascript'>
+    var socket = io.connect('http://localhost:8080');
+
+    function screenToPage(x,y) {
+      if (x < window.screenX ||
+          x > window.screenX + window.outerWidth ||
+          y < window.screenY ||
+          y > window.screenY + window.outerHeight) {
+        return null;
+      }
+      var barHeight = window.outerHeight - window.innerHeight;
+      return {
+        x: x - window.screenX,
+        y: y - window.screenY - barHeight
+      }
+    }
+    var el = document.getElementById('eye');
+    socket.on('frame', function (data) {
+      if (!data.avg.x && !data.avg.y) { return; }
+      var pos = screenToPage(data.avg.x, data.avg.y);
+      if (!pos) { return; }
+      el.style.left = (pos.x)+'px';
+      el.style.top = (pos.y)+'px';
+    });
+
+  </script>
+</body>
+</html>

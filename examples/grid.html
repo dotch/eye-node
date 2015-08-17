@@ -1,0 +1,72 @@
+<html>
+<head>
+  <title>TheEyeTribe Grid Example</title>
+  <script type='text/javascript' src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <style>
+    body,html {
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .cell {
+      border: 1px solid #000;
+      display: inline-block;
+      width: 200px;
+      height: 200px;
+      box-sizing: border-box;
+    }
+    .cell.active {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    var socket = io.connect('http://localhost:8080');
+
+    var size = 200;
+    var countX = Math.floor((window.innerWidth-10)/size);
+    var countY = Math.floor(window.innerHeight/size);
+    var count = countX * countY;
+    while (count--) {
+      var cell = document.createElement('div');
+      cell.classList.add('cell');
+      document.body.appendChild(cell);
+    }
+
+    function screenToPage(x,y) {
+      if (x < window.screenX ||
+        x > window.screenX + window.outerWidth ||
+        y < window.screenY ||
+        y > window.screenY + window.outerHeight) {
+        return null;
+      }
+      var barHeight = window.outerHeight - window.innerHeight;
+      return {
+        x: x - window.screenX,
+        y: y - window.screenY - barHeight
+      }
+    }
+    var previousEl;
+    socket.on('frame', function (data) {
+      if (!data.avg.x && !data.avg.y) { return; }
+      var pos = screenToPage(data.avg.x, data.avg.y);
+      if (!pos) { return; }
+      if (previousEl) {
+        previousEl.classList.remove('active');
+      }
+      var el = document.elementFromPoint(pos.x, pos.y);
+      if (el) {
+        el.classList.add('active');
+      } else {
+        console.log(pos);
+      }
+      previousEl = el;
+    });
+  </script>
+</body>
+</html>
